@@ -1,0 +1,33 @@
+
+class DatabaseManager:
+    def __init__(self):
+        ...
+
+
+    def register_customer(self, first_name, last_name, address, email, password, phone):
+        #Register customer in database
+        ...
+
+    def create_booking(self, pick_up, drop_off, start_datetime, customer):
+        ...
+
+    def update_booking(self, booking):
+        ...
+
+    def get_booking(self, booking_id):
+        ...
+
+    def get_all_bookings(self):
+        ...
+
+    def authenticate(self, email, password):
+        ...
+
+    def is_driver_available(self, driver, start_datetime):
+        ...
+
+    def get_driver_bookings(self, driver):
+        ...
+
+    def get_drivers(self):
+        ...
