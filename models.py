@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from database import DatabaseManager
 
 
-CUSTOMER_DASH = """
+CUSTOMER_DASH = """\
 Please indicate your selection by choosing the appropriate number from the list below.
 1) Book Taxi
 2) View Bookings
@@ -193,6 +193,3 @@ class Administrator(User):
     def assign_driver(self, booking_id, driver_id):
         ...
 
-#Testing data for just the class, its not correct data such as the db.
-customer = Customer(4, "Naeem", "Hosein", "naeemhosein2@gmail.co", "password", "111111", "address", "db")
-customer.view_dashboard()

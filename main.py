@@ -53,15 +53,16 @@ def get_new_password():
 def login(db: DatabaseManager):
     while True:
         email = input("Please enter your email: ")
-        password = input("Please enter your password: ")
+        password = pwinput("Please enter your password: ")
         user = db.authenticate(email, password)
         if user is None:
             print("Invalid credientials.")
         else:
+            print("Login Successful.\n")
             user.view_dashboard()
-            #Fix this and see how it flows.
+            
             break
-        #We have to add a way for them to go back to the main menu if they dont want to login
+        
 
 def confirm_registration(db : DatabaseManager):
     while True:
@@ -87,8 +88,9 @@ def register(db: DatabaseManager):
 
     try:
         
-        db.register_customer(first_name, last_name, email, password, phone, address)
-        print("Registration Successful.")
+        user = db.register_customer(first_name, last_name, email, password, phone, address)
+        print("Registration Successful.\n")
+        user.view_dashboard()
     except DuplicateAccountError as error:
         print(error)
     #Put a way to cancel while registering to go back to main menu

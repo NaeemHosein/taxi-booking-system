@@ -3,9 +3,18 @@ import bcrypt
 from pathlib import Path
 from models import Customer, Driver, Administrator
 
-class DuplicateAccountError(Exception):
-    """Email or phone is already registered"""
+ROLE_CLASSES = {
+    "Customer" : Customer,
+    "Driver": Driver,
+    "Administrator" : Administrator
+}
 
+
+class DuplicateAccountError(Exception):
+    """Email or phone is already registered."""
+
+class DuplicateBookingError(Exception):
+    """This booking already exists."""
 
 class DatabaseManager:
     def __init__(self, db_name="taxi_booking.db"):
@@ -20,15 +29,25 @@ class DatabaseManager:
             self._connection.executescript(f.read())
 
     def authenticate(self, email, password):
-        #This is suppose to look into the database to see if the email and password matches, make sure and use the password hashing to see this.
-        #If this matches then you call on _build_user with the row to build out the user object depending on what user it is.
-        ...
+        row = self._connection.execute("SELECT * FROM user WHERE email = ?", (email,)).fetchone()
+        if row is None:
+            return None
+
+        if not bcrypt.checkpw(password.encode(), row["password_hash"].encode()):
+            return None
+
+        return self._build_user(row)
         
 
 
     def _build_user(self, row):
-        #build out user, (taking in the row, this is suppose to determine if the user role is a customer, driver, admin then create the object based on it.)
-        ...
+        cls = ROLE_CLASSES[row["role"]]
+        common = (row["user_id"], row["first_name"], row["last_name"], row["email"], row["password_hash"], row["phone"])
+
+        if cls == Customer:
+            return cls(*common, row["address"], self)
+        return cls(*common, self)
+    
 
 
     # Checks whether the specified email address is already registered in the database.
@@ -42,15 +61,17 @@ class DatabaseManager:
     def register_customer(self, first_name, last_name, email, password, phone, address):
         password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         
-        sql = ("INSERT INTO user (first_name, last_name, email, password_hash, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'Customer')")
+        sql = ("INSERT INTO user (first_name, last_name, email, password_hash, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'Customer') RETURNING *")
 
         try:
             with self._connection:
-                self._connection.execute(sql, (first_name, last_name, email, password_hash, phone, address))
+                row = self._connection.execute(sql, (first_name, last_name, email, password_hash, phone, address)).fetchone()
 
         except sqlite3.IntegrityError as error:
             raise DuplicateAccountError("That email or phone number is already registered") from error
-        
+
+        return self._build_user(row)
+
 
 
     def create_booking(self, pick_up, drop_off, start_datetime, Customer):
