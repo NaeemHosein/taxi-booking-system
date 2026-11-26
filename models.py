@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime
 from textwrap import dedent
 from typing import TYPE_CHECKING
-
+from tabulate import tabulate
 
 if TYPE_CHECKING:
     from database import DatabaseManager
@@ -14,11 +14,36 @@ CUSTOMER_DASH = """\
 Please indicate your selection by choosing the appropriate number from the list below.
 1) Book Taxi
 2) View Bookings
-3) Cancel Booking
-4) Return to login
-5) Quit
+3) View Booking History
+4) Cancel Booking
+5) Logout
 
 Enter: 
+"""
+
+DRIVER_DASH = """\
+Please indicate your selection by choosing the appropriate number from the list below.
+1) View Assigned Bookings
+2) Return to login
+3) Quit
+
+Enter: 
+"""
+
+DRIVER_DASH = """\
+Please indicate your selection by choosing the appropriate number from the list below.
+1) View Assigned Bookings
+2) Return to login
+3) Quit
+
+Enter: 
+"""
+
+ADMINISTRATOR_DASH = """\
+Please indicate your selection by choosing the appropriate number from the list below.
+1) Assign Driver
+2) Return to login
+3) Quit
 """
 
 
@@ -133,6 +158,9 @@ class Customer(User):
                     case "1":
                         start_datetime = datetime.combine(start_date, start_time)
                         self._db.create_booking(pick_up, drop_off, start_datetime, self)
+                        return print("Booking was successfuly created!\n")
+
+                        
                     case "2":
                         break
                     case "3":
@@ -140,7 +168,23 @@ class Customer(User):
                     case _:
                         print("Invalid Input. Please try again")
             
-            
+    def view_bookings(self):
+        bookings = self._db.get_customer_bookings(self.user_id)
+        ...
+        current_booking = ... 
+        #"""
+        # All bookings whether or not completed will get passed into bookings, if boo
+        # """
+        
+        ...
+
+    def view_booking_history(self):
+        bookings = self._db.get_customer_bookings(self.user_id)
+        ...
+        booking_history = ...
+        ...
+        test = tabulate[booking histoory, header]
+
 
     def cancel_booking(self, booking_id):
         ...
@@ -148,9 +192,10 @@ class Customer(User):
     """Private helper method to get and validate AM/PM datetime input"""
     def _get_date(self):
         while True:
-            date = input("Please enter the booking date (DD/MM/YYYY).\nExample - '21/11/2026'.\nEnter: ").strip()
+            date = input("Please enter the booking date (DD/MM/YYYY).\nExample - '21/11/2026'.\nEnter: ")
             try:
                 booking_date = datetime.strptime(date, "%d/%m/%Y").date()
+                return booking_date
             except ValueError:
                 print("Invalid date entered. Example - '21/11/2026' ")
 
@@ -170,12 +215,21 @@ class Customer(User):
 
 
 class Driver(User):
-    def __init__(self, user_id, first_name, last_name, email, password_hash, phone):
-        super().__init__(user_id, first_name, last_name, email, password_hash, phone)
+    def __init__(self, user_id, first_name, last_name, email, password_hash, phone, db: DatabaseManager):
+        super().__init__(user_id, first_name, last_name, email, password_hash, phone, db)
 
 
     def view_dashboard(self):
-        ...
+        print(f"Welcome {self._first_name}")
+    
+        while True:
+            match input(DRIVER_DASH):
+                case "1":
+                    self.view_assigned_bookings()
+                case "2":
+                    ...
+                case _:
+                    print("Invalid Input. Please try again")
 
     def view_assigned_bookings(self):
         ...
@@ -185,11 +239,22 @@ class Administrator(User):
         super().__init__(user_id, first_name, last_name, email, password_hash, phone)
 
     def view_dashboard(self):
+        print(f"Welcome {self._first_name}")
+    
+        while True:
+            match input(ADMINISTRATOR_DASH):
+                case "1":
+                    self.assign_driver()
+                case "2":
+                    ...
+                case _:
+                    print("Invalid Input. Please try again")
+
+
+    def assign_driver(self, booking_id, driver_id):
         ...
 
     def view_all_bookings(self):
         ...
 
-    def assign_driver(self, booking_id, driver_id):
-        ...
 

@@ -13,8 +13,8 @@ ROLE_CLASSES = {
 class DuplicateAccountError(Exception):
     """Email or phone is already registered."""
 
-class DuplicateBookingError(Exception):
-    """This booking already exists."""
+class BookingError(Exception):
+    """Booking cannot be registered."""
 
 class DatabaseManager:
     def __init__(self, db_name="taxi_booking.db"):
@@ -47,7 +47,7 @@ class DatabaseManager:
         if cls == Customer:
             return cls(*common, row["address"], self)
         return cls(*common, self)
-    
+        
 
 
     # Checks whether the specified email address is already registered in the database.
@@ -74,17 +74,31 @@ class DatabaseManager:
 
 
 
-    def create_booking(self, pick_up, drop_off, start_datetime, Customer):
-        # Priority 1 - Mehlik - Make the code here to insert the booking information into the database.
-        # Take inspiration from register customer
-        # Suppose to store the user_id from customer in the customer_id column in the booking information.
-        # use the with self._connection to have the cursor
+    def create_booking(self, pick_up, drop_off, start_datetime, Customer: Customer):
+                
+        sql = ("INSERT INTO booking (pick_up, drop_off, start_datetime, customer_id) VALUES (?, ?, ?, ?)")
+
+        try:
+            with self._connection:
+                self._connection.execute(sql, (pick_up, drop_off, start_datetime, Customer.user_id))
+
+        except sqlite3.IntegrityError as error:
+            raise BookingError("There was a problem creating this booking.") from error
+        ...
+
+
+    def get_customer_bookings(self, user_id):
+        #SQL that pulls all bookings of the user based on the booking id, which will filter through customer id, and you do the thing like "row = self._connection", return row
         ...
 
     def update_booking(self, booking):
         ...
 
+
     def get_booking(self, booking_id):
+        ...
+
+    def get_unassigned_bookings(self):
         ...
 
     def get_all_bookings(self):
